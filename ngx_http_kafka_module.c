@@ -164,7 +164,7 @@ void msg_consume (rd_kafka_message_t *rkmessage, void *opaque) {
 	if (rkmessage->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
 		fprintf(stderr," Consumer reached end of [%ld] \n",rkmessage->offset);
 		// run =0;
-		msg_consume2(request, NULL);
+		msg_consume2(request, "no data");
 		return;
 	}
 
@@ -245,8 +245,15 @@ static ngx_int_t ngx_http_kafka_handler(ngx_http_request_t *request) {
 		mainConf = ngx_http_get_module_main_conf(request, ngx_http_kafka_module);
 
 		localConf->rkt = rd_kafka_topic_new(mainConf->rk, topic, localConf->rktc);
+
+
+		/*
+		RD_KAFKA_OFFSET_END
+		RD_KAFKA_OFFSET_BEGINNING
+		*/
+
 		int ret;
-		ret = rd_kafka_consume_start(localConf->rkt, 0, RD_KAFKA_OFFSET_BEGINNING);
+		ret = rd_kafka_consume_start(localConf->rkt, 0, RD_KAFKA_OFFSET_END);
 		  if (ret == -1) {
 			fprintf(stderr, "rd_kafka_consume_start error\n");
 		  } else {
@@ -306,7 +313,8 @@ static ngx_int_t ngx_http_kafka_handler(ngx_http_request_t *request) {
 	*/  
 	//while(1)
 	{
-		rkmessage = rd_kafka_consumer_poll(main_conf->rk, 1000);  
+		rkmessage =  rd_kafka_consume(localConf->rkt, 0, 1000);
+//		rkmessage = rd_kafka_consumer_poll(main_conf->rk, 1000);  
 
 		if(rkmessage){  
 			msg_consume(rkmessage, request);
@@ -376,7 +384,7 @@ ngx_int_t ngx_http_kafka_init_worker(ngx_cycle_t *cycle) {
 		fprintf(stderr, "%% %s\n", errstr);  
 		return -1;  
 	} else {
-		fprintf(stderr, "rd_kafka_conf_set group.id ok\n");  
+		fprintf(stderr, "rd_kafka_conf_set group.id ok11111\n");  
 	}
 
 
